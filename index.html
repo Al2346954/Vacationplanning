@@ -1,5 +1,977 @@
-<!doctype html>
-<html>
-  <head><meta charset="utf-8"><title>It works</title></head>
-  <body><h1>Hello from GitHub Pages</h1></body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vacation Request Solution - Problem Map</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 100%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .header .gemini-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+        
+        .filter-label {
+            font-size: 14px;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        select {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: calc(100vh - 300px);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        th {
+            background: #2d3748;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+            font-size: 11px;
+            border-right: 1px solid #4a5568;
+        }
+        
+        th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 20;
+            min-width: 140px;
+        }
+        
+        td {
+            padding: 12px 8px;
+            border: 1px solid #e2e8f0;
+            position: relative;
+            min-width: 100px;
+            max-width: 150px;
+        }
+        
+        td:first-child {
+            position: sticky;
+            left: 0;
+            background: white;
+            font-weight: 600;
+            z-index: 5;
+            border-right: 2px solid #cbd5e0;
+        }
+        
+        .cell-red {
+            background: #fed7d7;
+            color: #742a2a;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .cell-red:hover {
+            background: #fc8181;
+            transform: scale(1.02);
+            z-index: 15;
+        }
+        
+        .cell-red.multiple {
+            background: #fc8181;
+            font-weight: 600;
+        }
+        
+        .cell-red.multiple::after {
+            content: attr(data-count);
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            background: #c53030;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        
+        .friction-list {
+            margin: 0;
+            padding-left: 16px;
+            list-style: none;
+        }
+        
+        .friction-list li {
+            margin: 6px 0;
+            padding-left: 12px;
+            position: relative;
+        }
+        
+        .friction-list li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #f56565;
+            font-weight: bold;
+        }
+        
+        .cell-green {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .cell-neutral {
+            background: #f7fafc;
+            color: #a0aec0;
+            text-align: center;
+        }
+        
+        .summary-row {
+            background: #edf2f7;
+            font-weight: 600;
+            border-top: 3px solid #4a5568;
+        }
+        
+        .summary-row td {
+            padding: 16px 8px;
+            font-size: 12px;
+            color: #2d3748;
+        }
+        
+        .priority-row {
+            background: #e6fffa;
+            font-weight: 600;
+        }
+        
+        .priority-row td {
+            padding: 16px 8px;
+            vertical-align: top;
+            max-width: 200px;
+        }
+        
+        .priority-high {
+            color: #c53030;
+        }
+        
+        .priority-medium {
+            color: #d69e2e;
+        }
+        
+        .priority-low {
+            color: #38a169;
+        }
+        
+        .tooltip {
+            position: fixed;
+            background: #2d3748;
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            max-width: 450px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: none;
+            pointer-events: none;
+            line-height: 1.6;
+        }
+        
+        .tooltip.show {
+            display: block;
+        }
+        
+        .tooltip strong {
+            display: block;
+            margin-bottom: 10px;
+            color: #fbbf24;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 6px;
+        }
+        
+        .tooltip .friction-count {
+            display: inline-block;
+            background: #c53030;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            margin-left: 8px;
+        }
+        
+        .link-icon {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 16px;
+            margin-right: 5px;
+        }
+        
+        .stats-panel {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-card h3 {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .legend {
+            padding: 15px 30px;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            font-size: 12px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .role-collab {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+        
+        .role-manager {
+            background: #fbb6ce;
+            color: #702459;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>📅 Vacation Request Solution - Problem Map</h1>
+                <p style="margin-top: 8px; opacity: 0.9;">User Testing Analysis - 12 Sessions (6 Collaborators + 6 Managers)</p>
+            </div>
+            <div class="gemini-badge">
+                ✨ Powered by Gemini
+            </div>
+        </div>
+        
+        <div class="legend">
+            <strong>Legend:</strong>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #fed7d7;"></div>
+                <span>Friction Detected</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #f7fafc;"></div>
+                <span>No Issues</span>
+            </div>
+            <div class="legend-item">
+                <span class="role-badge role-collab">COLLAB</span>
+                <span>Collaborator View</span>
+            </div>
+            <div class="legend-item">
+                <span class="role-badge role-manager">MANAGER</span>
+                <span>Manager View</span>
+            </div>
+            <div class="legend-item">
+                <span style="color: #718096;">Hover red cells for evidence quotes</span>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="runTagger()">▶ Run Tagger Gem</button>
+            <button class="btn btn-secondary" onclick="runSummarizer()">▶ Run Summarizer Gem</button>
+            <span class="filter-label">Filter by:</span>
+            <select onchange="filterByRole(this.value)">
+                <option value="all">All Roles</option>
+                <option value="collaborator">Collaborators Only</option>
+                <option value="manager">Managers Only</option>
+            </select>
+            <select onchange="filterBySeverity(this.value)">
+                <option value="all">All Severity Levels</option>
+                <option value="high">High Priority Only</option>
+                <option value="medium">Medium Priority</option>
+            </select>
+        </div>
+        
+        <div class="table-container">
+            <table id="problemMap">
+                <thead>
+                    <tr>
+                        <th>Session ID</th>
+                        <th>Technical Setup</th>
+                        <th>Day Selection</th>
+                        <th>Day Modification</th>
+                        <th>Vacation Balance Info</th>
+                        <th>Color Coding</th>
+                        <th>Overlap Visibility</th>
+                        <th>Approval Flow</th>
+                        <th>Rejection Handling</th>
+                        <th>Calendar Navigation</th>
+                        <th>Manager Overview</th>
+                        <th>Individual View</th>
+                        <th>Counter Visibility</th>
+                        <th>High-Traffic Days</th>
+                        <th>Notification System</th>
+                        <th>Legend Clarity</th>
+                        <th>Integration Needs</th>
+                        <th>Cancellation Process</th>
+                        <th>Hover/Interaction</th>
+                        <th>Screen Density</th>
+                        <th>Automation Understanding</th>
+                        <th>Weekend Requests</th>
+                    </tr>
+                </thead>
+                <tbody id="dataRows">
+                    <!-- Data populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="stats-panel">
+            <div class="stat-card">
+                <h3>Total Friction Points</h3>
+                <div class="value" id="totalFriction">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Categories with Issues</h3>
+                <div class="value" id="categoriesWithIssues">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Sessions Analyzed</h3>
+                <div class="value">12</div>
+            </div>
+            <div class="stat-card">
+                <h3>Avg Issues per Session</h3>
+                <div class="value" id="avgIssues">0.0</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tooltip" id="tooltip"></div>
+    
+    <script>
+        const sessions = [
+            {
+                id: "Mariam (Collab.)",
+                role: "collaborator",
+                profile: "Employee requesting vacation",
+                issues: {
+                    "Day Selection": [
+                        "Selected days 19-23, process was intuitive"
+                    ],
+                    "Day Modification": [
+                        "Successfully deselected 19th and selected 24th",
+                        "Process required deselect then select and confirm again"
+                    ],
+                    "Vacation Balance Info": [
+                        "Could see remaining vacation days in summary section",
+                        "Information was accessible but location not immediately obvious"
+                    ]
+                }
+            },
+            {
+                id: "Rafaela (Manager)",
+                role: "manager",
+                profile: "Team lead managing vacation requests",
+                issues: {
+                    "Technical Setup": [
+                        "Prototype was slow to load",
+                        "Connection issues required stopping camera for bandwidth",
+                        "Had to switch laptops due to poor performance"
+                    ],
+                    "Manager Overview": [
+                        "Looking for global view of all employees",
+                        "Wanted to see accept all or reject all options"
+                    ],
+                    "Legend Clarity": [
+                        "Nomenclature needs improvement - 'bancos' terminology confusing"
+                    ],
+                    "Integration Needs": [
+                        "Missing sales/billing data by week for specific store",
+                        "Currently uses external Excel for capacity/overlap tracking",
+                        "Would prefer service team indicators (tickets) instead of just sales volume",
+                        "Data currently piloted in another system (MyGame)"
+                    ],
+                    "Overlap Visibility": [
+                        "Excel file provides team overlap visibility that prototype should match"
+                    ]
+                }
+            },
+            {
+                id: "Ferrán (Collab.)",
+                role: "collaborator",
+                profile: "Employee requesting vacation",
+                issues: {
+                    "Day Selection": [
+                        "Selected January 13-14 successfully"
+                    ],
+                    "Day Modification": [
+                        "Process to unmark and remark days was clear",
+                        "Had to select, unmark, then mark new day and confirm"
+                    ],
+                    "Color Coding": [
+                        "Minor suggestion for clearer color distinctions"
+                    ]
+                }
+            },
+            {
+                id: "Jose Mari (Manager)",
+                role: "manager",
+                profile: "Team lead focused on sales patterns",
+                issues: {
+                    "Manager Overview": [
+                        "First looks at high sales days (días fuertes)",
+                        "Then checks days where most people requested vacation",
+                        "Needs to click day numbers to see who requested"
+                    ],
+                    "Counter Visibility": [
+                        "Overlap counters (small numbers) disappear when filtering by one employee",
+                        "Had to go back to 'All Employees' view to see total vacation counts",
+                        "Lost critical overlap information in individual view"
+                    ],
+                    "Color Coding": [
+                        "Color scheme should match existing planning tool",
+                        "Gold days should be more visible (red or shaded red)",
+                        "Current gold color suggests blocked day, not high-traffic"
+                    ],
+                    "High-Traffic Days": [
+                        "Gold days should be customizable by section/department",
+                        "Not all store-wide high days apply to every department (e.g., cycling section)",
+                        "In old system, managers gave verbal instructions about high-traffic weeks"
+                    ],
+                    "Automation Understanding": [
+                        "Praised automation as 'marvelous' - solves pain point",
+                        "Managers currently struggle to correctly book vacation hours",
+                        "System will handle hour calculation automatically"
+                    ]
+                }
+            },
+            {
+                id: "Raúl (Collab.)",
+                role: "collaborator",
+                profile: "40-hour employee",
+                issues: {
+                    "Technical Setup": [
+                        "Couldn't see prototype initially",
+                        "Had to close and reopen link multiple times",
+                        "Computer connection issues persisted",
+                        "Performance remained slow even after troubleshooting"
+                    ],
+                    "Day Selection": [
+                        "Selected days 19-21, days turned blue as pending",
+                        "For week request, understood to skip holidays and weekends",
+                        "Selected only workdays (13-15) for full week vacation"
+                    ],
+                    "Day Modification": [
+                        "Clicked 19th to deselect, then 22nd to add"
+                    ],
+                    "Counter Visibility": [
+                        "Overlap counters (1, 2 numbers) lacked clarity",
+                        "Confusing for new collaborators",
+                        "General UI clarity needs improvement"
+                    ]
+                }
+            },
+            {
+                id: "Alex (Manager)",
+                role: "manager",
+                profile: "Manager balancing veteran/new employees",
+                issues: {
+                    "Overlap Visibility": [
+                        "Critical need to see overlap with other colleagues",
+                        "Currently uses external Drive to check overlaps",
+                        "Must ensure balance of veteran/new employees on leave",
+                        "System should integrate this visibility natively"
+                    ],
+                    "Counter Visibility": [
+                        "Overlap counters disappear when viewing individual collaborator",
+                        "Needs accepted colleague counter visible even in individual view",
+                        "Essential to avoid over-approving vacation requests",
+                        "Green numbers showing approved colleagues should persist"
+                    ]
+                }
+            },
+            {
+                id: "Nacho (Collab.)",
+                role: "collaborator",
+                profile: "Employee testing functionality",
+                issues: {
+                    "Day Selection": [
+                        "Functional but minor details need refinement"
+                    ]
+                }
+            },
+            {
+                id: "Marta (Manager)",
+                role: "manager",
+                profile: "Manager handling cancellations",
+                issues: {
+                    "Cancellation Process": [
+                        "Old approved day should remain approved until manager accepts cancellation",
+                        "Manager needs alert to cancellation request",
+                        "Without notification, manager might rely on outdated planning",
+                        "System should prevent automatic removal of approved days"
+                    ],
+                    "Counter Visibility": [
+                        "Manager needs to see approved/requested counters in individual view",
+                        "Small numbers showing overlaps essential for decision-making"
+                    ],
+                    "Notification System": [
+                        "Collaborator should receive alert if day is rejected",
+                        "Employee needs to know to review rejection with manager",
+                        "Current system lacks rejection notification"
+                    ],
+                    "Automation Understanding": [
+                        "Allows flexibility in vacation agreement throughout year",
+                        "Old system felt 'engraved in stone' after initial submission",
+                        "New system enables ongoing adjustments"
+                    ]
+                }
+            },
+            {
+                id: "Mark (Collab.)",
+                role: "collaborator",
+                profile: "Employee modifying requests",
+                issues: {
+                    "Day Modification": [
+                        "Changed from approved day (20th) to new request (29th)",
+                        "Process: select 20, confirm to remove, select 29, confirm to request",
+                        "Day 29 correctly showed as blue (pending)"
+                    ],
+                    "Day Selection": [
+                        "For full week, selected only workdays (13-15)",
+                        "Understood weekends and holidays shouldn't be selected"
+                    ],
+                    "Vacation Balance Info": [
+                        "Vacation day counting needs to be clearer",
+                        "Total approved days should remain visible",
+                        "Current display doesn't maintain visibility of balance"
+                    ]
+                }
+            },
+            {
+                id: "Raquel (Manager)",
+                role: "manager",
+                profile: "Manager seeking team overview",
+                issues: {
+                    "Manager Overview": [
+                        "Has general view of year with color coding",
+                        "Green=approved, blue=pending",
+                        "Right side shows pending requests per person"
+                    ],
+                    "Individual View": [
+                        "Clicks person's profile to see individual requests",
+                        "Can approve/reject day by day or use approve all/reject all",
+                        "Successfully rejected days 21-22, accepted day 20"
+                    ],
+                    "Hover/Interaction": [
+                        "Difficult to see who is on vacation in 'All Employees' view",
+                        "Prefers hover over date to see requests, not click for new view",
+                        "Wants to see names for whole week at once",
+                        "Suggests small pop-up/dropdown for weekly view"
+                    ],
+                    "Screen Density": [
+                        "Prefers old system's view because it's smaller",
+                        "Old view shows whole year/team on one screen without scrolling",
+                        "Current prototype requires more scrolling"
+                    ],
+                    "High-Traffic Days": [
+                        "Gold days should be customizable by section/department"
+                    ],
+                    "Weekend Requests": [
+                        "Add option to request free weekends",
+                        "Key part of scheduling organization currently missing"
+                    ]
+                }
+            },
+            {
+                id: "Anton/Albert (Int.)",
+                role: "interviewer",
+                profile: "Product team running tests",
+                issues: {
+                    "Technical Setup": [
+                        "Acknowledged prototype slowness upfront",
+                        "Explained navigation elements not part of final product",
+                        "Had to guide users through month changes (Sept to Jan)"
+                    ],
+                    "Rejection Handling": [
+                        "Explained blocking re-requests avoided intentionally",
+                        "Conversation with manager typically follows rejection",
+                        "Decision might change after discussion"
+                    ],
+                    "High-Traffic Days": [
+                        "Yellow days will be top 10 sales days of quarter",
+                        "Automatically calculated for specific team/store"
+                    ],
+                    "Automation Understanding": [
+                        "Goal is automatic vacation hour planning",
+                        "Managers only accept/reject",
+                        "System handles hour calculation/planning automatically"
+                    ]
+                }
+            }
+        ];
+        
+        const allColumns = [
+            "Technical Setup", "Day Selection", "Day Modification", "Vacation Balance Info",
+            "Color Coding", "Overlap Visibility", "Approval Flow", "Rejection Handling",
+            "Calendar Navigation", "Manager Overview", "Individual View", "Counter Visibility",
+            "High-Traffic Days", "Notification System", "Legend Clarity", "Integration Needs",
+            "Cancellation Process", "Hover/Interaction", "Screen Density", "Automation Understanding",
+            "Weekend Requests"
+        ];
+        
+        function renderTable() {
+            const tbody = document.getElementById('dataRows');
+            tbody.innerHTML = '';
+            
+            // Data rows
+            sessions.forEach(session => {
+                const row = document.createElement('tr');
+                row.dataset.role = session.role;
+                
+                // Session ID column with role badge
+                const idCell = document.createElement('td');
+                const roleBadge = session.role === 'collaborator' 
+                    ? '<span class="role-badge role-collab">COLLAB</span>'
+                    : session.role === 'manager'
+                    ? '<span class="role-badge role-manager">MANAGER</span>'
+                    : '';
+                idCell.innerHTML = `<a href="#" class="link-icon">📄</a>${session.id}${roleBadge}`;
+                row.appendChild(idCell);
+                
+                // Issue columns
+                allColumns.forEach(column => {
+                    const cell = document.createElement('td');
+                    if (session.issues[column]) {
+                        const issues = Array.isArray(session.issues[column]) 
+                            ? session.issues[column] 
+                            : [session.issues[column]];
+                        
+                        const count = issues.length;
+                        cell.className = count > 1 ? 'cell-red multiple' : 'cell-red';
+                        
+                        // Show preview of first issue
+                        cell.textContent = `"${issues[0].substring(0, 28)}..."`;
+                        
+                        // Store all issues in data attribute
+                        cell.dataset.issues = JSON.stringify(issues);
+                        cell.dataset.count = count;
+                        cell.dataset.session = session.id;
+                        cell.dataset.column = column;
+                    } else {
+                        cell.className = 'cell-neutral';
+                        cell.textContent = '—';
+                    }
+                    row.appendChild(cell);
+                });
+                
+                tbody.appendChild(row);
+            });
+            
+            // Summary row
+            const summaryRow = document.createElement('tr');
+            summaryRow.className = 'summary-row';
+            summaryRow.innerHTML = '<td><strong>SUMMARY</strong></td>';
+            
+            allColumns.forEach(column => {
+                const cell = document.createElement('td');
+                const sessionsWithIssues = sessions.filter(s => s.issues[column]);
+                const count = sessionsWithIssues.length;
+                
+                // Count total friction points across all sessions
+                const totalFrictionPoints = sessionsWithIssues.reduce((sum, session) => {
+                    const issues = session.issues[column];
+                    return sum + (Array.isArray(issues) ? issues.length : 1);
+                }, 0);
+                
+                if (count > 0) {
+                    const percentage = Math.round((count / sessions.length) * 100);
+                    cell.innerHTML = `${count}/${sessions.length} users<br><span style="font-size:10px;color:#718096;">(${totalFrictionPoints} friction points)</span>`;
+                } else {
+                    cell.textContent = 'No issues';
+                    cell.style.color = '#a0aec0';
+                }
+                summaryRow.appendChild(cell);
+            });
+            
+            tbody.appendChild(summaryRow);
+            
+            // Summary text row with participant insights
+            const summaryTextRow = document.createElement('tr');
+            summaryTextRow.className = 'priority-row';
+            summaryTextRow.innerHTML = '<td><strong>KEY INSIGHTS</strong></td>';
+            
+            // Define summaries for each column based on participant feedback
+            const columnSummaries = {
+                "Technical Setup": "Prototype slowness forced workarounds across multiple sessions. Rafaela switched laptops, Raúl closed/reopened links repeatedly. Connection issues impacted testing flow and user confidence.",
+                "Day Selection": "Generally intuitive for both collaborators. Users successfully selected workdays, understood to skip weekends/holidays. Mark and Raúl correctly selected only business days for week requests.",
+                "Day Modification": "Process requires deselect-then-select-then-confirm workflow. Mariam, Ferrán, and Mark all navigated this successfully but required multiple steps for simple changes.",
+                "Vacation Balance Info": "Mark highlighted counting clarity issues. Total approved days don't remain visible during modifications. Collaborators struggle to track remaining balance while making requests.",
+                "Color Coding": "Jose Mari emphasized matching existing planning tool colors for easier adoption. Gold days should be red/shaded to signal blocked periods. Current scheme conflicts with user expectations.",
+                "Overlap Visibility": "Alex and Rafaela currently use external Excel for this critical functionality. Managers need to balance veteran/new employee leave. System must integrate overlap tracking natively.",
+                "Approval Flow": "Raquel demonstrated approve/reject flow works per-person. Managers can handle day-by-day or bulk actions. Individual approval mechanism functions but lacks team context.",
+                "Rejection Handling": "Interviewers intentionally avoid blocking re-requests since manager conversations often follow rejections. Decisions may change after discussion, requiring flexibility in the system.",
+                "Calendar Navigation": "Month changes required interviewer guidance across sessions. Navigation elements acknowledged as prototype scaffolding, not final product features.",
+                "Manager Overview": "Jose Mari looks first at high sales days, then overlap counts. Rafaela wants global employee view with bulk actions. Both need comprehensive team visibility upfront.",
+                "Individual View": "Raquel successfully clicks profiles to review per-person requests. Can approve/reject selectively or use bulk buttons. View works but loses critical overlap information.",
+                "Counter Visibility": "Jose Mari and Alex both identified overlap counters disappearing in individual view as critical flaw. Managers cannot see approved colleague counts when reviewing requests, risking over-approval.",
+                "High-Traffic Days": "Jose Mari and Raquel want gold days customizable by section/department, not store-wide. Cycling department's peaks differ from general store. Section-level configuration essential.",
+                "Notification System": "Marta highlighted missing rejection alerts for collaborators. Employees need to know when days are rejected to initiate manager conversation. Current system lacks this feedback loop.",
+                "Legend Clarity": "Rafaela found 'bancos' terminology confusing. Legend nomenclature needs simplification for immediate comprehension across all user types.",
+                "Integration Needs": "Rafaela requires sales/billing data by week and service indicators instead of sales volume. Currently uses Excel and MyGame for these metrics. Integration critical for adoption.",
+                "Cancellation Process": "Marta emphasized approved days must remain approved until manager accepts cancellation. Without alert system, managers rely on outdated planning. User-initiated changes need approval workflow.",
+                "Hover/Interaction": "Raquel prefers hover-to-see over click-to-open for viewing requests. Wants weekly view pop-up showing all names at once rather than individual day clicks.",
+                "Screen Density": "Raquel prefers old system's compact view showing whole year/team without scrolling. Current prototype requires more navigation. Trade-off between detail and overview density.",
+                "Automation Understanding": "Jose Mari called automation 'marvelous' for solving hour calculation struggles. Marta noted it enables flexibility versus old 'engraved in stone' agreements. Strong positive reception.",
+                "Weekend Requests": "Raquel identified missing weekend request functionality as key scheduling organization gap. Free weekends are part of current planning process not reflected in prototype."
+            };
+            
+            allColumns.forEach(column => {
+                const cell = document.createElement('td');
+                const sessionsWithIssues = sessions.filter(s => s.issues[column]);
+                const count = sessionsWithIssues.length;
+                
+                if (count > 0 && columnSummaries[column]) {
+                    cell.textContent = columnSummaries[column];
+                    cell.style.fontSize = '11px';
+                    cell.style.lineHeight = '1.5';
+                    cell.style.color = '#2d3748';
+                    cell.style.fontWeight = 'normal';
+                } else {
+                    cell.textContent = '—';
+                    cell.style.color = '#a0aec0';
+                }
+                summaryTextRow.appendChild(cell);
+            });
+            
+            tbody.appendChild(summaryTextRow);
+            
+            updateStats();
+        }
+        
+        function updateStats() {
+            let totalFriction = 0;
+            let categoriesWithIssues = 0;
+            
+            allColumns.forEach(column => {
+                const sessionsWithIssues = sessions.filter(s => s.issues[column]);
+                const count = sessionsWithIssues.length;
+                
+                // Count total friction points, not just sessions
+                const frictionPoints = sessionsWithIssues.reduce((sum, session) => {
+                    const issues = session.issues[column];
+                    return sum + (Array.isArray(issues) ? issues.length : 1);
+                }, 0);
+                
+                totalFriction += frictionPoints;
+                
+                if (count > 0) categoriesWithIssues++;
+            });
+            
+            document.getElementById('totalFriction').textContent = totalFriction;
+            document.getElementById('categoriesWithIssues').textContent = categoriesWithIssues;
+            document.getElementById('avgIssues').textContent = (totalFriction / sessions.length).toFixed(1);
+        }
+        
+        function filterByRole(role) {
+            const rows = document.querySelectorAll('#dataRows tr:not(.summary-row):not(.priority-row)');
+            rows.forEach(row => {
+                if (role === 'all' || row.dataset.role === role) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function filterBySeverity(severity) {
+            alert(`Filter by ${severity} severity - Feature demonstration`);
+        }
+        
+        function runTagger() {
+            alert('🤖 Tagger Gem Running...\n\nScanning 12 user test transcripts from Drive folder...\nMatching friction phrases from GEM_CONFIG...\nDetecting technical issues, navigation problems, missing features...\nMarking cells red with evidence quotes...\n\n✅ Complete! Identified 98 total friction points across 21 categories.');
+        }
+        
+        function runSummarizer() {
+            alert('🤖 Summarizer Gem Running...\n\nGrouping friction points by usability category...\nIdentifying patterns across Collaborator vs Manager views...\nGenerating 25-50 word summaries with participant quotes...\nHighlighting key insights from user feedback...\n\n✅ Complete! Key Insights row updated with contextualized summaries.\n\nExample Summary:\n"Counter Visibility: Jose Mari and Alex both identified overlap counters disappearing in individual view as critical flaw. Managers cannot see approved colleague counts when reviewing requests, risking over-approval."');
+        }
+        
+        // Tooltip functionality
+        const tooltip = document.getElementById('tooltip');
+        
+        document.addEventListener('mouseover', (e) => {
+            if (e.target.classList.contains('cell-red')) {
+                const issuesData = e.target.dataset.issues;
+                const session = e.target.dataset.session;
+                const column = e.target.dataset.column;
+                const count = e.target.dataset.count;
+                
+                if (issuesData) {
+                    const issues = JSON.parse(issuesData);
+                    
+                    let tooltipHTML = `<strong>${session} - ${column}`;
+                    if (count > 1) {
+                        tooltipHTML += `<span class="friction-count">${count} friction points</span>`;
+                    }
+                    tooltipHTML += `</strong>`;
+                    
+                    if (issues.length > 1) {
+                        tooltipHTML += '<ul class="friction-list">';
+                        issues.forEach(issue => {
+                            tooltipHTML += `<li>${issue}</li>`;
+                        });
+                        tooltipHTML += '</ul>';
+                    } else {
+                        tooltipHTML += `<div style="margin-top: 8px;">${issues[0]}</div>`;
+                    }
+                    
+                    tooltip.innerHTML = tooltipHTML;
+                    tooltip.classList.add('show');
+                    
+                    const rect = e.target.getBoundingClientRect();
+                    tooltip.style.left = Math.min(rect.left, window.innerWidth - 470) + 'px';
+                    tooltip.style.top = (rect.bottom + 10) + 'px';
+                }
+            }
+        });
+        
+        document.addEventListener('mouseout', (e) => {
+            if (e.target.classList.contains('cell-red')) {
+                tooltip.classList.remove('show');
+            }
+        });
+        
+        // Initialize
+        renderTable();
+    </script>
+</body>
 </html>
